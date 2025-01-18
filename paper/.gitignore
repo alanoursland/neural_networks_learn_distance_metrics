@@ -6,4 +6,5 @@
 *.fls
 *.out
 *.synctex.gz
+*.synctex(busy)
 *.log
