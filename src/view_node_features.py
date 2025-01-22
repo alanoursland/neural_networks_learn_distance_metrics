@@ -190,38 +190,28 @@ def process_layer(layer_data, targets, layer_name, output_dir, num_bins, use_log
     return entropies, zero_counts
 
 def get_layers_to_analyze(model):
-    """Get the relevant layer after each linear layer - either its activation if it exists,
-    or the linear layer itself if no activation follows."""
+    """Get the relevant layers to analyze and assign appropriate names and titles based on their type."""
     layers_to_analyze = []
     model_name = model.name()
-    
-    for name, module in model.named_modules():
-        if isinstance(module, nn.Sequential):
-            layers = list(module.children())
-            layer_position = 0  # Keep track of which linear layer we're at
 
-            for i, layer in enumerate(layers):
-                if isinstance(layer, nn.Linear):
-                    layer_desc = f"{model_name}_linear{layer_position}"
-                    # Check if next layer is an activation
-                    if i + 1 < len(layers) and isinstance(layers[i + 1], (nn.ReLU, models.Abs)):
-                        # Store activation layer
-                        activation_type = "relu" if isinstance(layers[i + 1], nn.ReLU) else "abs"
-                        unique_name = f"{layer_desc}_{activation_type}"
-                        layers_to_analyze.append((unique_name, layers[i + 1]))
-                    else:
-                        # Store linear layer if no activation follows
-                        unique_name = f"{layer_desc}_raw"
-                        layers_to_analyze.append((unique_name, layer))
-                    layer_position += 1
-    
+    for name, module in model.named_modules():
+        if not name:
+            continue
+        if type(module).__name__ == "PerturbationLayer":
+            continue
+        if type(module).__name__ == "Sequential":
+            continue
+        layer_desc = f"{model_name}_{name}"
+        title = f"{model_name} - {type(module).__name__} ({name})"
+        layers_to_analyze.append((layer_desc, module, title))
+
     # Print discovered layers for debugging
     print("\nDiscovered layers:")
-    for name, layer in layers_to_analyze:
-        print(f"- {name}: {type(layer).__name__}")
+    for name, layer, title in layers_to_analyze:
+        print(f"- Name: {name},  Type:{type(layer).__name__}, Title: {title}")
 
     return layers_to_analyze
-
+    
 def main():
     parser = argparse.ArgumentParser(description='Analyze neural network node outputs')
     parser.add_argument('model_path', type=str, help='Path to the .pt model file')
@@ -279,13 +269,14 @@ def main():
     # Create hooks
     print("Creating model hooks")
 
+    print(layers_to_analyze)
     hooks = []
-    for idx, (name, layer) in enumerate(layers_to_analyze):
+    for idx, (name, layer, description) in enumerate(layers_to_analyze):
         def make_hook(layer_name, layer_idx):
             def hook(module, input, output):
                 layer_outputs[f'{layer_name}_{layer_idx}'] = output.clone().cpu().detach().numpy()
             return hook
-        hook = make_hook('layer', idx)
+        hook = make_hook(name, idx)
         hooks.append(layer.register_forward_hook(hook))
 
     # Process test data

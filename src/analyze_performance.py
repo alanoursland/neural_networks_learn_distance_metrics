@@ -233,8 +233,8 @@ def main():
     # Configuration
 
     results_dir = Path('results')
-    experiment_dir = results_dir / 'models_with_L2'  # Update this based on your experiment name
-    output_dir =    results_dir / 'analysis_with_L2'
+    experiment_dir = results_dir / 'models_with_L2_50k'  # Update this based on your experiment name
+    output_dir =    results_dir / 'analysis_with_L2_50k'
     os.makedirs(output_dir, exist_ok=True)
     
     # Find all model directories

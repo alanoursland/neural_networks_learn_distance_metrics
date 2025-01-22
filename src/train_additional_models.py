@@ -417,17 +417,15 @@ if __name__ == "__main__":
     # evaluate_all_models({models.Model_Abs2().to(device), models.Model_Abs2_Neg().to(device),}, runs_per_model=1, epochs=5000, lr=0.001, exp_name="models_with_bias")
     # evaluate_all_models({Model_Abs2_Neg_L2().to(device),}, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
     # evaluate_all_models({Model_ReLU_Neg_L2().to(device),}, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
-    # evaluate_all_models({
-    #     Model_ReLU_Bias().to(device), 
-    #     Model_ReLU2_Bias().to(device), 
-    #     Model_ReLU2_Neg_Bias().to(device), 
-    #     Model_ReLU_L2_Neg().to(device),
-    #     Model_Abs_Bias().to(device),
-    #     Model_Abs2_Bias().to(device),
-    #     Model_Abs2_Neg_Bias().to(device),
-    #     Model_Abs_L2_Neg().to(device),
-    #     }, runs_per_model=20, epochs=50000, lr=0.001, exp_name="models_with_bias")
     evaluate_all_models({
-        Model_ReLU_L2().to(device),
-        Model_Abs_L2().to(device),
-        }, runs_per_model=20, epochs=50000, lr=0.001, exp_name="models_with_bias")
+        Model_ReLU_Bias().to(device), 
+        Model_ReLU2_Bias().to(device), 
+        Model_ReLU2_Neg_Bias().to(device), 
+        Model_Abs_Bias().to(device),
+        Model_Abs2_Bias().to(device),
+        Model_Abs2_Neg_Bias().to(device),
+        }, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
+    # evaluate_all_models({
+    #     Model_ReLU_L2().to(device),
+    #     Model_Abs_L2().to(device),
+    #     }, runs_per_model=20, epochs=50000, lr=0.001, exp_name="models_with_bias")
