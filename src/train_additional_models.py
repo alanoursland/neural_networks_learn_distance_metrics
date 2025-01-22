@@ -395,6 +395,48 @@ class Model_ReLU_L2_Neg(torch.nn.Module):
     def description(self):
         return "x -> Linear -> ReLU -> L2Norm -> Neg -> y"
 
+class Model_Simple_L2(torch.nn.Module):
+    def __init__(self):
+        super(Model_Simple_L2, self).__init__()
+        self.linear0 = torch.nn.Linear(28*28, 128)
+        self.linear1 = L2Norm(128, 10)
+        self.layers = torch.nn.Sequential(
+            self.linear0,
+            self.linear1,
+        )
+    
+    def forward(self, x):
+        return self.layers(x)
+    
+    def name(self):
+        return "simple-l2"
+    
+    def description(self):
+        return "x -> Linear -> OffsetL2 -> y"
+
+class Model_Simple_L2_Neg(torch.nn.Module):
+    def __init__(self):
+        super(Model_Simple_L2_Neg, self).__init__()
+        self.linear0 = torch.nn.Linear(28*28, 128)
+        self.linear1 = L2Norm(128, 10)
+        self.neg = models.Neg()
+        self.layers = torch.nn.Sequential(
+            self.linear0,
+            self.linear1,
+            self.neg,
+        )
+    
+    def forward(self, x):
+        return self.layers(x)
+    
+    def name(self):
+        return "simple-l2-neg"
+    
+    def description(self):
+        return "x -> Linear -> OffsetL2 -> Neg -> y"
+
+
+
 def create_model_list(device):
     return [
         # models.Model_ReLU2().to(device),  
@@ -417,15 +459,21 @@ if __name__ == "__main__":
     # evaluate_all_models({models.Model_Abs2().to(device), models.Model_Abs2_Neg().to(device),}, runs_per_model=1, epochs=5000, lr=0.001, exp_name="models_with_bias")
     # evaluate_all_models({Model_Abs2_Neg_L2().to(device),}, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
     # evaluate_all_models({Model_ReLU_Neg_L2().to(device),}, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
-    evaluate_all_models({
-        Model_ReLU_Bias().to(device), 
-        Model_ReLU2_Bias().to(device), 
-        Model_ReLU2_Neg_Bias().to(device), 
-        Model_Abs_Bias().to(device),
-        Model_Abs2_Bias().to(device),
-        Model_Abs2_Neg_Bias().to(device),
-        }, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
+    # evaluate_all_models({
+    #     Model_ReLU_Bias().to(device), 
+    #     Model_ReLU2_Bias().to(device), 
+    #     Model_ReLU2_Neg_Bias().to(device), 
+    #     Model_Abs_Bias().to(device),
+    #     Model_Abs2_Bias().to(device),
+    #     Model_Abs2_Neg_Bias().to(device),
+    #     }, runs_per_model=20, epochs=5000, lr=0.001, exp_name="models_with_bias")
     # evaluate_all_models({
     #     Model_ReLU_L2().to(device),
     #     Model_Abs_L2().to(device),
-    #     }, runs_per_model=20, epochs=50000, lr=0.001, exp_name="models_with_bias")
+    #     }, runs_per_model=20, epochs=50000, lr=0.001, exp_name="models_with_bias")    
+
+    evaluate_all_models({
+        Model_Simple_L2().to(device),
+        Model_Simple_L2_Neg().to(device),
+        }, runs_per_model=1, epochs=50000, lr=0.001, exp_name="models_simple_l2")
+

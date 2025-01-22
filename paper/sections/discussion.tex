@@ -4,9 +4,16 @@ We hypothesized that neural networks might exhibit biases in their ability to le
 
 \subsection{Feature Distributions in Latent Spaces}
 
-To investigate the network’s internal processes, we analyze the distance distributions of data points from the hyperplanes defined by the nodes of the first linear layer. This distance corresponds to the preactivation values and geometrically represents how far each input lies from a decision boundary. Since we do not have direct access to the exact features learned by each node, we use MNIST class labels as proxies for these features. While this approach assumes that each class captures distinct, meaningful aspects of the data, it allows us to gain insights into the network’s behavior at a granular level.
+To investigate the network's internal processes, we analyze the distance distributions of data points from the hyperplanes defined by the nodes of the first linear layer. This distance corresponds to the preactivation values and geometrically represents how far each input lies from a decision boundary. Since we do not have direct access to the exact features learned by each node, we use MNIST class labels as proxies for these features. While this approach assumes that each class captures distinct, meaningful aspects of the data, it allows us to gain insights into the network's behavior at a granular level.
 
-Figure~\ref(fig:distance_distribution) shows an example of these class distributions. Each histogram reveals a cluster of points corresponding to a specific class, exhibiting heterogeneity in statistical properties such as mean, variance, skewness, and modality. Class distributions overlap significantly, and the extent of this overlap varies across nodes. 
+Figure~\ref{fig:distance_distribution} shows an example of these class distributions. Each histogram reveals a cluster of points corresponding to a specific class, exhibiting heterogeneity in statistical properties such as mean, variance, skewness, and modality. Class distributions overlap significantly, and the extent of this overlap varies across nodes. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/distance_distribution}
+    \caption{An example of class distributions. Each histogram reveals a cluster of points corresponding to a specific class, exhibiting heterogeneity in statistical properties such as mean, variance, skewness, and modality.}
+    \label{fig:distance_distribution}
+\end{figure}
 
 Together, all of the outputs of the first linear layer form a 128-dimensional latent space. The second linear layer defines a hyperplane 
 $y=Wx+b$ in 129-dimensional space, where the scalar output $y$ extends the original 128 dimensions. While most analyses of linear layers focus on linear separation, we can also interpret a hyperplane by examining the specific points it intersects within the latent space. The hyperplane defined by the second linear layer can be uniquely defined by 129 linearly independent points.
@@ -118,7 +125,7 @@ The ReLU variants of OffsetL2 also showed remarkable improvement and stability, 
 
 The consistently lower standard deviations in the OffsetL2 models (all $\leq$ 0.14\%) compared to their baseline counterparts indicates that explicit prototype learning not only improves performance but also leads to more reliable training outcomes. This stability, combined with the superior accuracy across all OffsetL2 variants, validates our hypothesis that explicitly modeling the geometric constraints of the learning problem leads to better solutions.
 
-The superior performance of the OffsetL2 architecture can be directly traced to its mathematical foundations. While previous architectures approximated individual components of the Mahalanobis distance calculation, OffsetL2 explicitly implements the original Mahalanobis distance equation by computing the L2 norm of whitened distances from learned prototypes. This direct implementation of the underlying statistical theory - moving from approximation to explicit calculation - manifests in both improved accuracy (≥97.5\%) and notably reduced variance across all variants. The consistency between the mathematical framework and empirical results provides strong validation of the theoretical connection between neural networks and Mahalanobis distance.
+The superior performance of the OffsetL2 architecture can be directly traced to its mathematical foundations. While previous architectures approximated individual components of the Mahalanobis distance calculation, OffsetL2 explicitly implements the original Mahalanobis distance equation by computing the L2 norm of whitened distances from learned prototypes. This direct implementation of the underlying statistical theory - moving from approximation to explicit calculation - manifests in both improved accuracy ($\geq97.5\%$) and notably reduced variance across all variants. The consistency between the mathematical framework and empirical results provides strong validation of the theoretical connection between neural networks and Mahalanobis distance.
 
 \subsection{Conclusion}
 
