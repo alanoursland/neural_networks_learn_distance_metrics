@@ -2,17 +2,18 @@
 \label{sec:exp_design}
 
 \subsection{The Core Tension: Distance vs.\ Intensity}
-A key theoretical premise, motivated by prior work, is that hidden-layer activations in neural networks can behave like a distance metric: smaller activation values indicate a closer match to a learned prototype or decision boundary. We refer to this as a \emph{distance-based feature interpretation}. By contrast, standard classification with \texttt{CrossEntropyLoss} (CEL) and \texttt{LogSoftmax} requires that the ``winning'' class produce the highest logit. This creates an \emph{intensity-based feature interpretation}, where larger activation values signify stronger presence of a feature.
-
+\label{sec:core_tension}
+A key theoretical premise, motivated by prior work, is that hidden-layer activations in neural networks can behave like a distance metric: smaller activation values indicate a closer match to a learned prototype or decision boundary. Neural networks trained with \texttt{CrossEntropyLoss} (CEL) and \texttt{LogSoftmax} ultimately rely on an \emph{intensity-based} interpretation of logits: \emph{larger values} (whether large positive or least negative) are taken to indicate stronger feature presence.  This creates a conceptual tension:
 \begin{itemize}
-    \item \textbf{Distance-Based Feature Interpretation.} Hidden-layer activations may encode proximity: smaller values indicate a stronger match to target features.
-    \item \textbf{Intensity-Based Feature Interpretation.} CEL + LogSoftmax treat the most positive (or least negative) logit as the predicted class, implying that larger values reflect stronger activation.
+    \item \textbf{Distance-Based Feature Interpretation:} Smaller hidden activations $\implies$ stronger match.
+    \item \textbf{Intensity-Based Feature Interpretation:} Larger hidden/logit values $\implies$ stronger presence of that feature/class.
 \end{itemize}
 
-Thus, although the final classification is always intensity-based (higher logit = more likely), we hypothesize that internal layers may still prefer \emph{distance-like} encodings. This experiment is designed to probe how these two viewpoints interact when architectural constraints encourage or prevent one representation over the other.
+Although the final classification in a CEL + LogSoftmax framework is always intensity-based (highest logit wins), we hypothesize that the network's \emph{internal} representations may still prefer distance-like patterns. The experiments below are designed to determine whether networks naturally favor distance or intensity encodings under various architectural constraints.
 
 \subsection{Six Architectures to Probe Representations}
-To investigate whether networks exhibit an inherent bias toward distance or intensity representations, we design six different architectures. Each uses two linear layers and either \texttt{ReLU} or \texttt{Abs} as nonlinear activations. The key difference lies in how the second layer's activation (if present) and any negation (\texttt{Neg}) step are arranged:
+\label{sec:architectures}
+To test whether networks exhibit an inherent bias toward distance-based or intensity-based representations, we design six two-layer architectures. Each uses two linear layers and either \texttt{ReLU} or \texttt{Abs} as nonlinearities in the hidden layer(s). The key difference lies in how the second (possibly final) nonlinearity and any negation (\texttt{Neg}) step are arranged:
 \begin{enumerate}
     \item \(\mathbf{x} \rightarrow \text{Linear} \rightarrow \text{ReLU} \rightarrow \text{Linear} \rightarrow \mathbf{y}\)
     \item \(\mathbf{x} \rightarrow \text{Linear} \rightarrow \text{Abs} \rightarrow \text{Linear} \rightarrow \mathbf{y}\)
@@ -23,46 +24,48 @@ To investigate whether networks exhibit an inherent bias toward distance or inte
 \end{enumerate}
 
 \subsubsection{Non-Neg vs.\ Neg Variants}
-\texttt{ReLU} and \texttt{Abs} both yield non-negative outputs, naturally aligning with a distance-like notion (distances are non-negative). By introducing the \texttt{Neg} operation (i.e., \(y = -x\)), a \emph{distance-like} output (small = stronger match) can be flipped to negative values. Within \texttt{LogSoftmax}, having a \emph{less negative} logit can still correspond to the chosen class. Conversely, if there is no \texttt{Neg} step, the model might maintain non-negative logits, consistent with an intensity perspective.
+\label{sec:nonneg_neg}
+Because \texttt{CrossEntropyLoss} (\texttt{CEL}) ultimately requires an intensity-based output (the largest logit is chosen), the presence or absence of a \texttt{Neg} step forces the second layer to adopt different internal representations. Both \texttt{ReLU} and \texttt{Abs} produce non-negative outputs, which naturally suits a distance-like interpretation (distances cannot be negative). However, 
+\begin{itemize}
+    \item \textbf{With Neg:} The non-negative penultimate outputs (interpretable as “distance-like”) are flipped to negative values. Being the “least negative” among classes still makes that logit the winner in \texttt{LogSoftmax}, so the second layer is effectively \emph{forced} to represent distance (small = better match).  
+    \item \textbf{Without Neg:} The network must produce positively valued logits directly to succeed under \texttt{CEL}, thereby \emph{forcing} an intensity-like representation (large = stronger match) in the second layer.
+\end{itemize}
+This explicit manipulation of sign flow and final activations is what systematically compels each architecture toward either distance-based or intensity-based representations at the final stage.
+
 
 \subsubsection{Simple Control Models vs.\ Strictly Constrained Models}
+\label{sec:control_forced}
 \begin{itemize}
-    \item \textbf{Models 1 and 2 (Control).} No additional activation on the output. The network can effectively learn either distance or intensity encodings by adjusting weight signs or biases.
-    \item \textbf{Models 3 and 5 (Forced Intensity).} A second \texttt{ReLU} or \texttt{Abs} layer ensures that final activations are pushed to non-negative values, driving an intensity-style encoding.
-    \item \textbf{Models 4 and 6 (Forced Distance).} The penultimate activation remains non-negative, but a final \texttt{Neg} flips the sign to produce negative logits for the ``best-matching'' class. This explicitly enforces a distance-like representation prior to \texttt{Neg}, which then converts it to the intensity scale.
+    \item \textbf{Models 1 \& 2 (Control):} No second nonlinearity on the final output. The network can learn either distance or intensity representations by tuning weight signs or biases.
+    \item \textbf{Models 3 \& 5 (Forced Intensity):} A second \texttt{ReLU} or \texttt{Abs} ensures final outputs are non-negative. This naturally favors an intensity-like encoding (\emph{larger} activations indicate stronger presence).
+    \item \textbf{Models 4 \& 6 (Forced Distance):} After a non-negative penultimate layer, a final \texttt{Neg} flips sign. This explicitly encourages a distance-like internal representation (small = strong match), which is then converted into a negative logit that can still ``win'' if it is the least negative.
 \end{itemize}
-
-\noindent
-Thus, Models~1 and 2 can freely adopt either representation, Models~3 and 5 are biased toward positive intensity, and Models~4 and 6 are biased toward positive distance (converted to negative intensities).
 
 \subsection{Role of Bias Removal in the Final Layer}
-In all architectures, we remove the bias term \emph{only} in the second linear layer. Typically, a bias \(b\) could shift outputs upward, transforming negative or small activations into large positive logits. This shift would mask whether the network's internal representation is genuinely distance-based or intensity-based. By removing bias,
+\label{sec:bias_removal}
+A key design choice is \emph{removing the bias} in the second linear layer. This responds directly to our core question: \emph{Does the network truly adopt a distance-based representation, or is it only artificially shifting outputs to appear intensity-like?} With a bias term, the network could trivially ``translate'' any distance-like encoding (small values) into a large positive range. By disallowing bias:
 \begin{itemize}
-    \item The model cannot trivially ``shift'' negative outputs to positive.
-    \item It must either use a \texttt{Neg} layer (if available) or learn weight matrices that reflect the true sign convention of the representation (distance or intensity) without a simple constant offset.
+    \item We prevent the model from simply shifting negative or small activations to large positive logits.
+    \item If the network wants positively valued logits, it must \textit{intrinsically} learn an intensity-based pattern or rely on a \texttt{Neg} step to flip distance-coded signals.
 \end{itemize}
-This design choice makes it more difficult for the network to hide a distance-based encoding behind a positive bias, thereby revealing if it inherently prefers small or large activations to indicate feature presence.
+Hence, bias removal makes it clearer whether the final logits arise from a fundamentally distance- or intensity-like internal representation. This is crucial for teasing out the network’s \textbf{true} preference.
 
 \subsection{Training Setup: Minimizing Confounds}
-All six architectures are trained under the same minimalistic conditions:
+\label{sec:training_setup}
+All six architectures are trained under the same minimal conditions:
 \begin{itemize}
     \item \textbf{Dataset:} MNIST
     \item \textbf{Optimizer:} Stochastic Gradient Descent (full-batch updates)
     \item \textbf{Epochs:} 5000
-    \item \textbf{Fixed Learning Rate}
+    \item \textbf{Fixed Learning Rate} 0.001
     \item \textbf{Repetitions:} 20 runs per architecture
 \end{itemize}
-We intentionally avoid advanced optimizers (e.g., Adam), mini-batching, momentum, or early stopping, so we can focus on how each architecture \emph{intrinsically} learns, free from heavy hyperparameter tuning. Full-batch means the entire MNIST training set is used for each gradient update step, simplifying the hyperparameter space and ensuring any observed differences reflect genuine representational preferences.
-
-\subsection{Putting It All Together}
-\label{sec:design_discussion}
-\begin{itemize}
-    \item \textbf{Final Output via LogSoftmax.} Regardless of the sign or magnitude of outputs, the \texttt{LogSoftmax} layer determines the winning class by selecting the largest logit. A small, non-negative distance-like output can be flipped by \texttt{Neg} to become the largest (least negative) logit.
-    \item \textbf{Distance vs.\ Intensity in Internal Layers.} The network's earlier activations may inherently adopt a distance-like encoding, even though final classification is intensity-based. By systematically adding or omitting \texttt{Neg} and second activations, we can see how flexible or biased the network is toward one style of encoding.
-    \item \textbf{Bias Removal as a Key Probe.} Since no bias is allowed in the second linear layer, the network cannot simply translate its intermediate outputs to accommodate the final intensity requirement. This either forces it to learn genuinely positive logits or to rely on the explicit \texttt{Neg} step to make small (distance-like) values become high-probability classes.
-\end{itemize}
+Using full-batch (the entire MNIST training set per gradient update) avoids the stochasticity of mini-batch sampling and reduces hyperparameter tuning. No momentum or adaptive methods (e.g., Adam) are used, and there is no early stopping. We adopt this stripped-down setting so that any differences in final performance or internal activations can be attributed to the \emph{architectural} constraints and the natural inclination (distance vs.\ intensity) of the network.
 
 \subsection{Expected Outcome \& Significance}
-Based on prior theory, we hypothesize that networks may naturally prefer \emph{distance-like} representations (\( \text{small} = \text{strong match} \)). The question is whether architectural constraints such as \texttt{ReLU}/\texttt{Abs}, optional \texttt{Neg}, and bias removal make that preference more evident or whether models can adapt effectively to an \emph{intensity} framing (\( \text{large} = \text{strong match} \)) instead. By comparing final performance and internal behavior across these six carefully chosen architectures, we aim to shed light on the underlying representational biases in neural networks.
+\label{sec:expected_outcomes}
+Based on prior theory, we hypothesize that neural networks may have an inherent inclination toward distance-like representations (\( \text{small} = \text{strong match} \)), yet the final classification objective (\texttt{CrossEntropyLoss} with \texttt{LogSoftmax}) enforces an intensity-based view (largest logit = chosen class). Our experiment manipulates the architecture to \emph{force} either a distance-based or intensity-based encoding in the second layer (via \texttt{Neg} or non-negative activations). 
 
-In short, this design manipulates activations, sign flips, and bias usage to differentiate a \emph{distance-based} encoding of features from the standard \emph{intensity-based} output demanded by cross-entropy classification. The empirical findings will indicate how easily (or reluctantly) the networks adopt smaller or larger values to signify ``feature presence,'' thus clarifying the interplay between distance and intensity perspectives.
+We will compare the \emph{final classification accuracy} of each architecture under identical training conditions. If the models forced into a distance representation can match or exceed the performance of models forced to use intensity, this would suggest that distance-based encodings are not only feasible but may be naturally preferred. Conversely, if the forced-intensity models dominate, it would indicate that networks more readily adopt an intensity-style representation. 
+
+Overall, this experimental design systematically manipulates activation sign constraints, bias usage, and final-layer flipping to \emph{differentiate} a distance-based encoding from the standard intensity-based output of cross-entropy classification. The forthcoming results and analyses (\S\ref{sec:results}) will detail how effectively networks can adopt or abandon smaller vs.\ larger activations to signify “feature presence,” thereby elucidating fundamental representational biases in neural networks.
