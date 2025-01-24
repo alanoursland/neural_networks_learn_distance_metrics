@@ -1,0 +1,15 @@
+\section{Related Work}
+
+\subsection{Distance-Based Neural Network Interpretations}
+Understanding neural network representations through distance metrics has become a critical focus in machine learning, particularly for improving interpretability and robustness. Prior theoretical work has established connections between neural network computations and statistical distance measures such as the Mahalanobis distance \cite{mahalanobis1936, oursland2024interpreting}. These studies highlight how linear layers and activation functions can model statistical relationships in feature spaces.
+
+Alternative approaches, such as Radial Basis Function (RBF) networks \cite{broomhead1988rbf} and Siamese networks \cite{bromley1994signature}, have explored the integration of distance metrics into neural architectures for clustering and metric learning tasks. However, most of these methods focus on specific use cases, with limited generalization to broader architectures. Oursland et al. \cite{oursland2024interpreting} proposed a theoretical framework linking neural networks with Mahalanobis distance calculations, but empirical validation remains underexplored.
+
+Additionally, geometric interpretations of neural computation provide alternative perspectives for understanding internal representations. While these approaches capture valuable insights, they often neglect the interaction between architectural constraints and representational biases \cite{oursland2024neural}. Addressing these gaps is central to our investigation.
+
+\subsection{Activation Functions and Learned Representations}
+The choice of activation function plays a pivotal role in shaping learned representations. ReLU \cite{nair2010relu}, with its simplicity and computational efficiency, has become the default for many architectures, but its propensity for producing "dead neurons" can hinder representational learning. Absolute value (Abs) activations have been proposed as an alternative, facilitating symmetric, distance-like representations \cite{oursland2024interpreting}.
+
+Recent studies have explored the representational differences between ReLU and Abs activations. For example, Oursland et al. \cite{oursland2024neural} demonstrated that networks with ReLU and Abs activations are robust to intensity perturbations but highly sensitive to distance-based perturbations. These findings suggest that neural networks inherently favor distance-based representations under certain architectural constraints.
+
+Further analyses have examined how specific architectural modifications, such as the inclusion of bias terms and Neg layers, influence representational preferences. While prior work has provided valuable insights into these dynamics, gaps remain in understanding how these factors interact with geometric constraints in feature spaces. This paper addresses these gaps by systematically evaluating the interplay between activation functions, representational biases, and architectural constraints.
