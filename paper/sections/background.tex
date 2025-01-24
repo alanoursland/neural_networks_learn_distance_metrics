@@ -1,9 +1,9 @@
 \section{Background}
 
 \subsection{Motivation and Context}
-Deep neural networks have been shown to learn complex internal representations that significantly impact their performance and interpretability \cite{goodfellow2016deep, lipton2018mythos}. While early neural models such as the McCulloch-Pitts neuron \cite{mcculloch1943logical} and the perceptron \cite{rosenblatt1958perceptron} conceptualized activations in an \emph{intensity-based} manner (larger activation $\implies$ stronger feature), recent theoretical work suggests that \emph{distance-based} interpretations may arise naturally in hidden layers \cite{oursland2024}. Understanding these hidden-layer biases has implications for optimization stability, generalization, interpretability, and the design of future architectures.
+Deep neural networks have been shown to learn complex internal representations that significantly impact their performance and interpretability. While early neural models such as the McCulloch-Pitts neuron  and the perceptron  conceptualized activations in an \emph{intensity-based} manner (larger activation $\implies$ stronger feature), recent theoretical work suggests that \emph{distance-based} interpretations may arise naturally in hidden layers. Understanding these hidden-layer biases has implications for optimization stability, generalization, interpretability, and the design of future architectures.
 
-In the broader context of modern deep learning, representations learned by neural networks are central to their success \cite{schmidhuber2015deep}. However, questions remain about how these representations are shaped by architectural choices (e.g., activation functions, presence/absence of bias terms) and by training objectives (e.g., \texttt{CrossEntropyLoss} forcing “largest logit” classification). Addressing these questions is crucial for:
+In the broader context of modern deep learning, representations learned by neural networks are central to their success. However, questions remain about how these representations are shaped by architectural choices (e.g., activation functions, presence/absence of bias terms) and by training objectives (e.g., \texttt{CrossEntropyLoss} forcing “largest logit” classification). Addressing these questions is crucial for:
 \begin{itemize}
     \item Designing networks that leverage distance-like encodings, potentially improving robustness or interpretability.
     \item Understanding why certain networks catastrophically fail under standard intensity-based assumptions.
@@ -18,7 +18,7 @@ A \emph{distance-based} perspective interprets smaller activations as indicating
     a(x) = \|W(x - \mu)\|_p,
     \label{eq:distance-based}
 \end{equation}
-where $\mu$ is a learned prototype (or mean) and $W$ a scaling matrix. Activations closer to zero imply that $x$ is more similar to the prototype under the chosen norm. This approach aligns with statistical metrics such as Mahalanobis distance and is theoretically grounded in multivariate analysis \cite{bishop2006pattern}.
+where $\mu$ is a learned prototype (or mean) and $W$ a scaling matrix. Activations closer to zero imply that $x$ is more similar to the prototype under the chosen norm. This approach aligns with statistical metrics such as Mahalanobis distance and is theoretically grounded in multivariate analysis.
 
 \paragraph{Intensity-Based Features}
 Historically, neural networks have treated larger neuron activations as indicative of stronger feature detections. For a linear layer followed by an activation function $f(\cdot)$, the activation is:
@@ -26,16 +26,16 @@ Historically, neural networks have treated larger neuron activations as indicati
     a(x) = f(Wx + b),
     \label{eq:intensity-based}
 \end{equation}
-where $Wx + b$ is the affine transformation of $x$. Under typical classification objectives like \texttt{CrossEntropyLoss} with \texttt{LogSoftmax}, the largest logit determines the predicted class \cite{goodfellow2016deep}, thereby \emph{reinforcing} intensity-based outputs at the final layer.
+where $Wx + b$ is the affine transformation of $x$. Under typical classification objectives like \texttt{CrossEntropyLoss} with \texttt{LogSoftmax}, the largest logit determines the predicted class, thereby \emph{reinforcing} intensity-based outputs at the final layer.
 
-\begin{figure}[ht]
-    \centering
-    % Placeholder for an illustrative figure
-    \includegraphics[width=0.75\textwidth]{placeholder_distance_representation.png}
-    \caption{(a) Distance-based representation: smaller activations correspond to closer proximity to learned prototypes. 
-    (b) Intensity-based representation: larger activations indicate stronger feature presence.}
-    \label{fig:distance_representation}
-\end{figure}
+% \begin{figure}[ht]
+%     \centering
+%     % Placeholder for an illustrative figure
+%     \includegraphics[width=0.75\textwidth]{placeholder_distance_representation.png}
+%     \caption{(a) Distance-based representation: smaller activations correspond to closer proximity to learned prototypes. 
+%     (b) Intensity-based representation: larger activations indicate stronger feature presence.}
+%     \label{fig:distance_representation}
+% \end{figure}
 
 \subsection{Mathematical and Statistical Foundations}
 
@@ -51,24 +51,24 @@ Decomposing $\Sigma$ via eigendecomposition ($\Sigma = V \Lambda V^T$) yields:
     D_M(x) = \|\Lambda^{-\frac{1}{2}} V^T (x - \mu)\|_2.
     \label{eq:mahalanobis-2}
 \end{equation}
-In principle, linear transformations in a neural layer could approximate parts of this distance computation \cite{bishop2006pattern}. (For brevity, we omit the detailed derivation of the decomposition, and refer the reader to \cite{bishop2006pattern} for more details.)
+In principle, linear transformations in a neural layer could approximate parts of this distance computation. (For brevity, we omit the detailed derivation of the decomposition, and refer the reader to  for more details.)
 
 \paragraph{Geometric Interpretations and Bias Terms}
-Neural networks can be viewed as mapping inputs into intermediate latent spaces where geometry (e.g., hyperplanes, boundaries) emerges \cite{jolliffe2002pca}. Bias terms $b$ in the affine transformation $Wx + b$ shift these hyperplanes:
+Neural networks can be viewed as mapping inputs into intermediate latent spaces where geometry (e.g., hyperplanes, boundaries) emerges. Bias terms $b$ in the affine transformation $Wx + b$ shift these hyperplanes:
 \begin{equation}
     y = Wx + b.
 \end{equation}
 Such shifts can transform an otherwise distance-like internal representation (where smaller values indicate closeness) into intensity-like logits (where larger values indicate stronger predictions). This perspective underscores the importance of bias terms in shaping representational preference.
 
 \paragraph{Whitening and Normalization}
-Normalization techniques (e.g., batch normalization, whitening) can reshape the data manifold into forms more amenable to distance-like calculations. These transformations adjust the distribution of features, which can facilitate or suppress distance-based interpretations in hidden layers \cite{bishop2006pattern}.
+Normalization techniques (e.g., batch normalization, whitening) can reshape the data manifold into forms more amenable to distance-like calculations. These transformations adjust the distribution of features, which can facilitate or suppress distance-based interpretations in hidden layers.
 
 \subsection{Network Components and Representational Impact}
 
 \paragraph{Activation Functions}
 Choice of activation function imposes distinct geometric and numerical properties:
 \begin{itemize}
-    \item \textbf{ReLU}~\cite{nair2010rectified}: $f(x) = \max(0, x)$. This half-space activation naturally aligns with intensity-based ideas. However, ReLU networks can suffer from ``dead neurons,'' where weights are never updated if the input consistently lies in the negative regime.
+    \item \textbf{ReLU}~: $f(x) = \max(0, x)$. This half-space activation naturally aligns with intensity-based ideas. However, ReLU networks can suffer from ``dead neurons,'' where weights are never updated if the input consistently lies in the negative regime.
     \item \textbf{Abs}: $f(x) = |x|$. This symmetric activation can preserve information about magnitude independent of sign, aligning more closely with distance-based interpretations and preventing neurons from dying.
 \end{itemize}
 
@@ -87,13 +87,13 @@ Here we integrate both the detailed methodology of Draft 2 and the visual/struct
     \item \textbf{Bias terms}: to investigate how bias removal alters the representational preference, preventing a shift from distance-like internal codes to intensity-like outputs.
 \end{enumerate}
 
-\begin{figure}[ht]
-    \centering
-    % Placeholder for hyperplane illustration
-    \includegraphics[width=0.50\textwidth]{placeholder_hyperplane_bias.png}
-    \caption{Illustration of how bias terms can shift hyperplanes, transforming distance-like intermediate representations into intensity-based logits.}
-    \label{fig:hyperplane_bias}
-\end{figure}
+% \begin{figure}[ht]
+%     \centering
+%     % Placeholder for hyperplane illustration
+%     \includegraphics[width=0.50\textwidth]{placeholder_hyperplane_bias.png}
+%     \caption{Illustration of how bias terms can shift hyperplanes, transforming distance-like intermediate representations into intensity-based logits.}
+%     \label{fig:hyperplane_bias}
+% \end{figure}
 
 \begin{table}[ht]
 \centering
@@ -114,7 +114,7 @@ Model 6 & Abs & No & No \\
 \end{table}
 
 \subsubsection{Hypotheses}
-Building on prior work \cite{oursland2024,bishop2006pattern}, we propose:
+Building on prior work, we propose:
 \begin{enumerate}
     \item \textbf{Hidden layers favor distance-based representations}: Even under conventional intensity-driven loss functions, intermediate layers may minimize distance to prototypes.
     \item \textbf{Enforcing intensity-based outputs may lead to optimization challenges}: Removing or flipping bias terms can expose potential conflicts between distance vs. intensity objectives.
@@ -124,10 +124,10 @@ Building on prior work \cite{oursland2024,bishop2006pattern}, we propose:
 \subsection{Related Work and Literature Review}
 Several lines of research inform our study of representational biases:
 \begin{itemize}
-    \item \textbf{Representational Learning and Embeddings:} Previous works on embeddings and manifold learning have highlighted the geometric aspects of deep representations \cite{bishop2006pattern, jolliffe2002pca}. 
-    \item \textbf{Activation Function Studies:} Exploring how ReLU, LeakyReLU, Abs, or other nonlinearities impact learned representations has been a focal point for improved stability and performance \cite{nair2010rectified}.
-    \item \textbf{Bias Terms and Geometry:} Biases have been studied for their role in shifting decision boundaries and altering interpretability, as seen in prior work on margin theory and linear separators \cite{lipton2018mythos}.
-    \item \textbf{Distance Measures in Neural Networks:} Recent papers have investigated how network layers might implicitly compute distances, especially in tasks involving clustering or metric learning \cite{oursland2024}.
+    \item \textbf{Representational Learning and Embeddings:} Previous works on embeddings and manifold learning have highlighted the geometric aspects of deep representations. 
+    \item \textbf{Activation Function Studies:} Exploring how ReLU, LeakyReLU, Abs, or other nonlinearities impact learned representations has been a focal point for improved stability and performance.
+    \item \textbf{Bias Terms and Geometry:} Biases have been studied for their role in shifting decision boundaries and altering interpretability, as seen in prior work on margin theory and linear separators.
+    \item \textbf{Distance Measures in Neural Networks:} Recent papers have investigated how network layers might implicitly compute distances, especially in tasks involving clustering or metric learning.
 \end{itemize}
 We position our work at the intersection of these research directions, examining whether standard architectures \emph{naturally} adopt distance-like encodings, and how minor architectural changes (activation, bias usage, Neg layers) can either enhance or suppress these tendencies.
 

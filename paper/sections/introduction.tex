@@ -1,0 +1,41 @@
+\section{Introduction}
+
+Neural networks have revolutionized machine learning through their ability to learn complex internal representations. While early models like the McCulloch-Pitts neuron conceptualized neural activations in intensity-based terms (larger activation indicating stronger feature presence), recent theoretical work suggests that distance-based interpretations may arise naturally in hidden layers. This tension between distance-based and intensity-based representations has significant implications for network design, optimization, and interpretability.
+
+\subsection{The Core Question}
+
+A fundamental question emerges: Do neural networks inherently favor distance-based or intensity-based representations? In distance-based encoding, smaller activations indicate stronger matches to learned prototypes, mathematically expressed as:
+
+\begin{equation}
+    a(x) = \|W(x - \mu)\|_p
+\end{equation}
+
+where $\mu$ represents a learned prototype and $W$ a scaling matrix. Conversely, intensity-based encoding treats larger activations as indicating stronger feature presence:
+
+\begin{equation}
+    a(x) = f(Wx + b)
+\end{equation}
+
+where $f(\cdot)$ is an activation function applied to an affine transformation.
+
+\subsection{Implications and Applications}
+
+Understanding these representational biases is critical for:
+
+\begin{itemize}
+    \item Designing robust and interpretable networks that naturally align with distance-like encodings.
+    \item Explaining catastrophic failures in certain architectures under intensity-based assumptions.
+    \item Informing practical design choices, such as activation functions, normalization schemes, and bias terms.
+\end{itemize}
+
+\subsection{Our Contribution}
+
+This paper systematically investigates representational biases in neural networks and offers the following contributions:
+
+\begin{enumerate}
+    \item A controlled experimental study comparing six architectural variants, revealing how geometric constraints shape internal representations.
+    \item A novel analysis connecting representational biases to the geometric properties of feature spaces.
+    \item Development of OffsetL2, an architecture that explicitly incorporates Mahalanobis distance calculations, achieving improved performance and stability across tasks.
+\end{enumerate}
+
+Our findings demonstrate that the success or failure of neural architectures is not dictated by an inherent bias toward distance or intensity representations but by their interaction with the geometric constraints of the feature space. OffsetL2 exploits these geometric principles, achieving significant performance gains, including a $<specific result here>$. This work provides a robust framework for understanding and optimizing representation learning, with applications to classification, clustering, and beyond.
