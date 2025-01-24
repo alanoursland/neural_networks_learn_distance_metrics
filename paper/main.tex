@@ -1,58 +1,47 @@
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 
-% Packages
-\usepackage{amsmath, amssymb}
+\usepackage{microtype}
 \usepackage{graphicx}
+\usepackage{times}
 \usepackage{natbib}
-\usepackage{geometry}
+\usepackage{amsmath,amssymb}
 \usepackage{hyperref}
 \usepackage{booktabs}
-\usepackage{authblk}
-\usepackage{caption}
-\usepackage{float}
-\usepackage{subcaption}  % For subfigures
+\usepackage{multicol}
 
-% Geometry
-\geometry{
-    a4paper,
-    left=25mm,
-    right=25mm,
-    top=25mm,
-    bottom=25mm,
-}
-
-% Title and Author
-\title{TBD}
-\author{Alan Oursland}
-\affil{\textit{alan.oursland@gmail.com}}
-\date{January 2025}
+\setlength{\textwidth}{6.75in}
+\setlength{\textheight}{9.0in}
+\setlength{\columnsep}{0.25in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\oddsidemargin}{-0.25in}
+\setlength{\evensidemargin}{-0.25in}
 
 \begin{document}
 
+\title{TBD}
+\author{Alan Oursland\\
+Independent Researcher\\
+\texttt{alan.oursland@gmail.com}}
+\date{January 2025}
+
 \maketitle
 
-% Abstract
 \begin{abstract}
-\input{sections/abstract}
+    \input{sections/abstract}
 \end{abstract}
+    
+\begin{multicols}{2}  % Start two columns without page break
 
-% Sections
-% \input{sections/introduction}
-% \input{sections/related_work}
-% \input{sections/background}
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/background}
 \input{sections/design}
 \input{sections/results}
 \input{sections/discussion}
-% \input{sections/conclusion}
+\input{sections/conclusion}
 
-% \bibliographystyle{plain}
-% \bibliography{references}
+\bibliographystyle{plain}
+\bibliography{references}
 
-% Appendices start here
-% \appendix
-
-% \input{sections/appendix_implementation}
-% \input{sections/appendix_statistics}
-% \input{sections/appendix_visualizations}
-
+\end{multicols}
 \end{document}
