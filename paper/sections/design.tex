@@ -1,9 +1,10 @@
 \section{Experimental Design}
 \label{sec:exp_design}
 
-\subsection{The Core Tension: Distance vs.\ Intensity}
-\label{sec:core_tension}
-A key theoretical premise, motivated by prior work, is that hidden-layer activations in neural networks can behave like a distance metric: smaller activation values indicate a closer match to a learned prototype or decision boundary. Neural networks trained with \texttt{CrossEntropyLoss} (CEL) and \texttt{LogSoftmax} ultimately rely on an \emph{intensity-based} interpretation of logits: \emph{larger values} (whether large positive or least negative) are taken to indicate stronger feature presence.  This creates a conceptual tension:
+\subsection{Distance vs.\ Intensity}
+\label{sec:distance_vs_intensity}
+A key theoretical premise, motivated by prior work, is that hidden-layer activations in neural networks can behave like a distance metric: smaller activation values indicate a closer match to a learned prototype or decision boundary. Neural networks trained with \texttt{CrossEntropyLoss} (CEL) and \texttt{LogSoftmax} ultimately rely on an \emph{intensity-based} interpretation of logits: \emph{larger values} (whether large positive or least negative) are taken to indicate stronger feature presence.  Neural networks can be interpreted in two ways:
+
 \begin{itemize}
     \item \textbf{Distance-Based Feature Interpretation:} Smaller hidden activations $\implies$ stronger match.
     \item \textbf{Intensity-Based Feature Interpretation:} Larger hidden/logit values $\implies$ stronger presence of that feature/class.
