@@ -1,41 +1,23 @@
 \section{Introduction}
 
-Neural networks have revolutionized machine learning through their ability to learn complex internal representations. While early models like the McCulloch-Pitts neuron conceptualized neural activations in intensity-based terms (larger activation indicating stronger feature presence), recent theoretical work suggests that distance-based interpretations may arise naturally in hidden layers. The distinction between distance-based and intensity-based representations carries significant implications for network design, optimization, and interpretability.
+Neural networks have transformed the field of machine learning by learning complex, hierarchical representations of data. Since their inception, these models predominantly been interpreted through the lens of intensity-based representations, where larger activation values are assumed to correspond to stronger feature presence. This perspective traces back to the McCulloch-Pitts neuron \cite{mcculloch1943logical} and Rosenblatt's perceptron \cite{rosenblatt1958perceptron}, forming the basis of modern deep learning. However, the success of neural networks often outpaces our theoretical understanding of their internal mechanisms \cite{lipton2018mythos}. Central questions about how neural networks represent and process features remain unresolved, limiting our ability to interpret their behavior and design more effective architectures.
 
-\subsection{The Core Question}
+Recent theoretical work challenges the dominance of intensity-based interpretations, suggesting that distance-based representations may naturally emerge in neural networks \cite{oursland2024interpreting}. In a distance-based paradigm, smaller activations indicate proximity to learned prototypes or decision boundaries, fundamentally altering how we understand feature representations. This alternative perspective, grounded in statistical principles such as the Mahalanobis distance \cite{mahalanobis1936generalized}, provides a compelling framework for rethinking neural network behavior. However, the empirical exploration of this idea and its implications for network interpretability remain underdeveloped.
 
-A fundamental question emerges: Do neural networks inherently favor distance-based or intensity-based representations? In distance-based encoding, smaller activations indicate stronger matches to learned prototypes, mathematically expressed as:
-
-\begin{equation}
-    a(x) = \|W(x - \mu)\|_p
-\end{equation}
-
-where $\mu$ represents a learned prototype and $W$ a scaling matrix. Conversely, intensity-based encoding treats larger activations as indicating stronger feature presence:
-
-\begin{equation}
-    a(x) = f(Wx + b)
-\end{equation}
-
-where $f(\cdot)$ is an activation function applied to an affine transformation.
-
-\subsection{Implications and Applications}
-
-Understanding these representational biases is critical for:
-
+\textbf{Core Questions.} This paper addresses three key questions:
 \begin{itemize}
-    \item Designing robust and interpretable networks that naturally align with distance-like encodings.
-    \item Explaining catastrophic failures in certain architectures under intensity-based assumptions.
-    \item Informing practical design choices, such as activation functions, normalization schemes, and bias terms.
+    \item Do neural networks naturally prefer distance-based or intensity-based representations when learning features?
+    \item How do architectural choices, such as activation functions and bias terms, shape representational biases?
+    \item What are the geometric and statistical principles underlying these representational preferences, and how can they inform network design?
 \end{itemize}
 
-\subsection{Our Contribution}
-
-This paper systematically investigates representational biases in neural networks and offers the following contributions:
-
+\textbf{Contributions.} To investigate these questions, we propose a theoretical framework that examines neural network behavior through the dual lenses of distance and intensity representations. We then validate this framework through empirical experiments designed to probe representational biases under different architectural constraints. Our contributions are as follows:
 \begin{enumerate}
-    \item A controlled experimental study comparing six architectural variants, revealing how geometric constraints shape internal representations.
-    \item A novel analysis connecting representational biases to the geometric properties of feature spaces.
-    \item Development of OffsetL2, an architecture that explicitly incorporates Mahalanobis distance calculations, achieving improved performance and stability across tasks.
+    \item \textit{Theoretical Framework:} We formalize the distinction between distance- and intensity-based representations, highlighting their implications for interpretability and network design.
+    \item \textit{Empirical Analysis:} Through systematic experiments, we analyze network behavior under six architectural variants, uncovering the mechanisms behind catastrophic dead node creation under intensity-based constraints and providing geometric explanations for performance limitations under distance-based constraints.
+    \item \textit{Validation via OffsetL2:} As a surprising and validating result, we introduce OffsetL2, a novel architecture that reinforces our theoretical framework by leveraging distance-based principles, achieving strong and stable performance while opening new directions for future research.
 \end{enumerate}
 
-Our findings demonstrate that the success or failure of neural architectures is not dictated by an inherent bias toward distance or intensity representations but by their interaction with the geometric constraints of the feature space. OffsetL2 exploits these geometric principles, achieving significant performance gains, including a $<specific result here>$. This work provides a robust framework for understanding and optimizing representation learning, with applications to classification, clustering, and beyond.
+These contributions provide a robust theoretical framework for understanding neural network representations, supported by empirical findings that validate the geometric principles through surprising experimental results.
+
+The remainder of this paper is structured as follows. Section \ref{sec:related_work} reviews related work on neural network interpretability, distance metrics, and activation functions. Section \ref{sec:background} provides the theoretical foundation for distance- and intensity-based representations. Section \ref{sec:exp_design} outlines our experimental setup, including the six architectural variants designed to probe representational biases. Section \ref{sec:results} presents our empirical findings, with a focus on catastrophic dead node failures and the geometric analysis of learned representations. Finally, Section \ref{sec:discussion} synthesizes these results, introduces OffsetL2 as a validating conclusion, and discusses implications for future research.

@@ -1,142 +1,62 @@
 \section{Background}
+\label{sec:background}
 
-\subsection{Motivation and Context}
-Deep neural networks have been shown to learn complex internal representations that significantly impact their performance and interpretability. While early neural models such as the McCulloch-Pitts neuron  and the perceptron  conceptualized activations in an \emph{intensity-based} manner (larger activation $\implies$ stronger feature), recent theoretical work suggests that \emph{distance-based} interpretations may arise naturally in hidden layers. Understanding these hidden-layer biases has implications for optimization stability, generalization, interpretability, and the design of future architectures.
+Understanding the foundations of how neural networks learn and represent data is critical to improving their interpretability and robustness. In this section, we introduce the theoretical groundwork that frames our exploration of distance-based and intensity-based representations, providing the necessary context for the experiments and analyses to follow.
 
-In the broader context of modern deep learning, representations learned by neural networks are central to their success. However, questions remain about how these representations are shaped by architectural choices (e.g., activation functions, presence/absence of bias terms) and by training objectives (e.g., \texttt{CrossEntropyLoss} forcing “largest logit” classification). Addressing these questions is crucial for:
-\begin{itemize}
-    \item Designing networks that leverage distance-like encodings, potentially improving robustness or interpretability.
-    \item Understanding why certain networks catastrophically fail under standard intensity-based assumptions.
-    \item Informing practical decisions on activation functions, normalization schemes, and bias term usage to align with the desired representational preference.
-\end{itemize}
+\subsection{Features, Representations, and Distance Metrics}
+
+In this work, we draw a distinction between features and their representation within a neural network. We define features as inherent characteristics of the data that can be captured by statistical distance metrics, reflecting underlying relationships and structures within the data. Representations, on the other hand, refer to how the network encodes these features, which can be either intensity-based or distance-based. Intensity-based representations encode features through the magnitude of activations, while distance-based representations encode features through proximity to learned prototypes, as measured by a distance metric.
+
+We argue that neural networks fundamentally learn distance features, features grounded in statistical distance metrics that quantify the similarity or dissimilarity between data points and learned prototypes. From this perspective, there is no inherent notion of a statistical "intensity feature." What are commonly interpreted as intensity representations are, in fact, manifestations of underlying distance relationships.
+
+What are typically perceived as intensity-based representations can be reinterpreted as disjunctive sets of distance features. In logical terms, this corresponds to representing a concept in Disjunctive Normal Form (DNF), a concept formalized by early work in Boolean algebra \cite{post1921introduction}. For instance, if a network appears to learn an intensity representation for class $a$, it can be interpreted as implicitly learning the negation of distances to other classes: $\lnot(b or c) = \lnot b and \lnot c$, where $b$ and $c$ represent distance features associated with other classes. We posit that $a$ cannot be directly represented by a linear intensity metric, and that the perceived intensity representation is an artifact of underlying distance relationships.
+
+In contrast, a distance-based representation, as advocated in this work, can be viewed as a conjunctive set of distance features. This aligns with representing a concept in Conjunctive Normal Form (CNF). In this approach, the network directly encodes proximity to a specific prototype or set of prototypes. For example, a distance representation for classes $a$ would simply entail a small distance to the prototype(s) associated with $a$. This is represented logically as simply $a$.
 
 \subsection{Distance vs. Intensity Representations}
+\label{subsec:dist-intensity-rep}
 
-\paragraph{Distance-Based Features}
-A \emph{distance-based} perspective interprets smaller activations as indicating stronger matches to learned prototypes or centroids. Mathematically, one might define the activation $a(x)$ for input $x$ as:
+While a precise mathematical definition of "intensity-based representation" remains elusive, the concept is implicitly embedded in many common practices within the field. Operationally, we can define intensity-based interpretations as those that treat larger neural activations as indicative of a stronger presence, higher probability, or greater certainty of a particular feature or class. This view is prevalent in the interpretation of output layers in classification tasks, where the class corresponding to the highest activation (often after a softmax) is taken as the network's prediction, a method reinforced by the use of one-hot encoded labels in datasets like MNIST. This practice is further solidified by the use of loss functions like Cross-Entropy, which encourage higher activations for the correct class during training.  Furthermore, techniques like feature visualization via activation maximization \cite{erhan2009visualizing, olah2017feature} rely on the assumption that inputs generating the highest activations in specific neurons or layers are most representative of the learned features. This intensity-based view also manifests in the common practice of interpreting pixel values in image datasets directly as intensities, where brighter pixels are often assumed to correspond to more significant features. It is important to note that this intensity-based interpretation, while prevalent, is ultimately an assumption about the meaning of neural activations. It is not inherently dictated by the underlying mathematical operations of the network but rather imposed upon them.
+
+In contrast, a distance-based representation interprets smaller activations as indicating greater similarity to learned prototypes or closer proximity to decision boundaries. This perspective aligns with statistical distance metrics, such as the Mahalanobis distance \cite{mahalanobis1936generalized}, where $f(x)$ is inversely proportional to the distance of the input $x$ from one or more learned prototypes $\mu$. These prototypes effectively define the decision boundaries within the feature space. Mathematically, this can be expressed as:
 \begin{equation}
-    a(x) = \|W(x - \mu)\|_p,
-    \label{eq:distance-based}
+f(x) = |W(x - \mu)|_p,
 \end{equation}
-where $\mu$ is a learned prototype (or mean) and $W$ a scaling matrix. Activations closer to zero imply that $x$ is more similar to the prototype under the chosen norm. This approach aligns with statistical metrics such as Mahalanobis distance and is theoretically grounded in multivariate analysis.
+where $W$ is a learned scaling matrix that shapes the distance metric according to the underlying data structure, $\mu$ is the prototype, and $p$ denotes the norm. This framing reinterprets activations as proximity to learned features, emphasizing geometric relationships within the latent space.
 
-\paragraph{Intensity-Based Features}
-Historically, neural networks have treated larger neuron activations as indicative of stronger feature detections. For a linear layer followed by an activation function $f(\cdot)$, the activation is:
-\begin{equation}
-    a(x) = f(Wx + b),
-    \label{eq:intensity-based}
-\end{equation}
-where $Wx + b$ is the affine transformation of $x$. Under typical classification objectives like \texttt{CrossEntropyLoss} with \texttt{LogSoftmax}, the largest logit determines the predicted class, thereby \emph{reinforcing} intensity-based outputs at the final layer.
+While the absolute value function (Abs) provides a direct mathematical representation of distance, the widely used Rectified Linear Unit (ReLU) can also be interpreted within this framework. As shown in the relationship $Abs(x) = ReLU(x) + ReLU(-x)$, the Abs function can be decomposed into two ReLU functions, one operating on the positive part and the other on the negative part of the input. This suggests that even when using ReLU, the network can still implicitly encode information about the distance.
 
-% \begin{figure}[ht]
-%     \centering
-%     % Placeholder for an illustrative figure
-%     \includegraphics[width=0.75\textwidth]{placeholder_distance_representation.png}
-%     \caption{(a) Distance-based representation: smaller activations correspond to closer proximity to learned prototypes. 
-%     (b) Intensity-based representation: larger activations indicate stronger feature presence.}
-%     \label{fig:distance_representation}
-% \end{figure}
+\subsection{Theoretical Foundations: Mahalanobis Distance}
 
-\subsection{Mathematical and Statistical Foundations}
-
-\paragraph{Mahalanobis Distance}
-Distance-based representations can often be linked to the Mahalanobis distance, a generalization of Euclidean distance that accounts for covariance among features:
+The Mahalanobis distance offers a statistically grounded framework for understanding distance-based representations. Defined as:
 \begin{equation}
     D_M(x) = \sqrt{(x - \mu)^T \Sigma^{-1} (x - \mu)},
-    \label{eq:mahalanobis-1}
 \end{equation}
-where $\mu$ is the mean (or prototype) and $\Sigma$ is the covariance matrix. 
-Decomposing $\Sigma$ via eigendecomposition ($\Sigma = V \Lambda V^T$) yields:
+where $\Sigma$ is the covariance matrix, the Mahalanobis distance adjusts for feature correlations and scales. Neural network layers can approximate components of this metric through linear transformations and normalization techniques \cite{oursland2024interpreting}.
+
+Decomposing $\Sigma$ via eigendecomposition $\Sigma = V\Lambda V^T$, where $V$ contains eigenvectors and $\Lambda$ is a diagonal matrix of eigenvalues, allows the distance to be expressed as:
 \begin{equation}
-    D_M(x) = \|\Lambda^{-\frac{1}{2}} V^T (x - \mu)\|_2.
-    \label{eq:mahalanobis-2}
+    D_M(x) = \| \Lambda^{-1/2} V^T (x - \mu) \|_2.
 \end{equation}
-In principle, linear transformations in a neural layer could approximate parts of this distance computation. (For brevity, we omit the detailed derivation of the decomposition, and refer the reader to  for more details.)
+This connection reveals how linear layers with activation functions such as Absolute Value (Abs) can model statistical distances, linking neural networks to interpretable, distance-based computations.
 
-\paragraph{Geometric Interpretations and Bias Terms}
-Neural networks can be viewed as mapping inputs into intermediate latent spaces where geometry (e.g., hyperplanes, boundaries) emerges. Bias terms $b$ in the affine transformation $Wx + b$ shift these hyperplanes:
-\begin{equation}
-    y = Wx + b.
-\end{equation}
-Such shifts can transform an otherwise distance-like internal representation (where smaller values indicate closeness) into intensity-like logits (where larger values indicate stronger predictions). This perspective underscores the importance of bias terms in shaping representational preference.
+\subsection{Geometric Interpretations of Representations}
 
-\paragraph{Whitening and Normalization}
-Normalization techniques (e.g., batch normalization, whitening) can reshape the data manifold into forms more amenable to distance-like calculations. These transformations adjust the distribution of features, which can facilitate or suppress distance-based interpretations in hidden layers.
+Neural networks map inputs into latent spaces where learned features are geometrically structured by hyperplanes. In a distance-based interpretation, these hyperplanes are not merely separators of classes, but rather work together to define manifolds where distances to learned prototypes determine the representation. 
 
-\subsection{Network Components and Representational Impact}
+The equation y = Wx + b, where x is N-dimensional and y is a scalar, defines an N-dimensional hyperplane embedded in an (N+1)-dimensional space. The decision boundary of the hyperplane is defined as the region where it intersects the data plane where the activation function equals zero (e.g., $0 = Wx + b$ in a linear layer). This decision boundary is an (N-1)-dimensional subspace of the input space. Each hyperplane can be uniquely described by a set of `N` linearly independent points that it intersects. $N-1$ of these points can be on the decision boundary with the final point resting outside the data plane at ${x=0, y=b}$. Points on this decision boundary, can be viewed as feature protypes that encode meaningful relationships between input features and their representation in the latent space. These prototypes may not be similar in the way humans typically perceive similarity, as they are defined by their shared location within a specific distance metric space rather than by superficial resemblance. Each prototype can be seen as a representative example within a particular region of the data plane, capturing the essential features that define that region.
 
-\paragraph{Activation Functions}
-Choice of activation function imposes distinct geometric and numerical properties:
+In the absence of a bias term (such that $b=0$), each hyperplane is constrained to pass through the origin of the latent space. This effectively makes the origin a fixed prototype for each hyperplane. While this constraint might appear to limit flexibility, in high-dimensional spaces the impact on the overall representational power is minimal, considering that each hyperplane still intersects `N-2` other linearly independent points on its decision boundary, in addition to the origin and a point off the data plane ${x!=0, y!=0}$. Although these prototype points are theoretically important for understanding the learned representations, recovering them from hyperplanes in high-dimensional spaces is often computationally infeasible due to to the exponential growth of the search space with increasing dimensionality.
+
+\subsection{Activation Functions and Representational Preferences}
+
+Activation functions play a critical role in shaping the representational biases of neural networks:
 \begin{itemize}
-    \item \textbf{ReLU}~: $f(x) = \max(0, x)$. This half-space activation naturally aligns with intensity-based ideas. However, ReLU networks can suffer from ``dead neurons,'' where weights are never updated if the input consistently lies in the negative regime.
-    \item \textbf{Abs}: $f(x) = |x|$. This symmetric activation can preserve information about magnitude independent of sign, aligning more closely with distance-based interpretations and preventing neurons from dying.
+    \item \textbf{ReLU}: $f(x) = \max(0, x)$. ReLU is often associated with intensity-based interpretations, emphasizing large, positive activations. However, as discussed in \ref{subsec:dist-intensity-rep}, ReLU can also be viewed through a distance-based lens. The zeroing out of negative activations effectively creates a region of the feature space where the activation is zero, corresponding to inputs that lie on one side of the decision boundary. The magnitude of the positive activations can be interpreted as encoding proximity to learned prototypes within the region where the activation is non-zero. Despite this potential for a distance-based interpretation, ReLU suffers from "dead neurons," where nodes become inactive if inputs consistently lie in the negative regime, potentially hindering the learning process.
+    \item \textbf{Absolute Value (Abs)}: $f(x) = |x|$. Abs offers a more direct connection to distance-based representations by symmetrically reflecting negative activations, preserving magnitude information. Unlike ReLU, Abs maintains information about the magnitude of the distance from the decision boundary, regardless of direction. This ensures all neurons remain active and contribute to the representation, providing a more complete picture of the input's position relative to learned prototypes.
+    \item \textbf{Neg Layers}: $f(x) = -x$. Neg layers invert activations. They reverse the order of activations, transforming larger values into smaller (more negative) values and vice-versa. They convert positive distance representations into negative intensity representations.
 \end{itemize}
 
-\paragraph{Neg Layers}
-A so-called ``Neg layer'' can flip non-negative activations to negative logits, emphasizing that lower values represent stronger matches (distance-like). This is sometimes introduced to force the network to interpret closeness in hidden units as ``strong activation'' in a reversed sense.
+\subsection{Connecting Theory to Experiments}
 
-\paragraph{Classification Framework}
-While hidden layers might favor distance-like encodings, the final classification layer typically uses \texttt{CrossEntropyLoss} combined with \texttt{LogSoftmax}, enforcing an \emph{intensity-based} paradigm for the ultimate decision. The largest output logit determines the predicted class, which can conflict with any distance-based preference in earlier layers.
-
-\subsection{Experimental Architecture and Hypotheses}
-
-Here we integrate both the detailed methodology of Draft 2 and the visual/structural clarity of Draft 3. Our experimental design systematically varies:
-\begin{enumerate}
-    \item \textbf{Activation function (ReLU vs. Abs)}: to test whether the network naturally learns distance-like or intensity-like encodings depending on nonlinearity.
-    \item \textbf{Neg layers}: to explicitly force distance-based interpretation by flipping signs.
-    \item \textbf{Bias terms}: to investigate how bias removal alters the representational preference, preventing a shift from distance-like internal codes to intensity-like outputs.
-\end{enumerate}
-
-% \begin{figure}[ht]
-%     \centering
-%     % Placeholder for hyperplane illustration
-%     \includegraphics[width=0.50\textwidth]{placeholder_hyperplane_bias.png}
-%     \caption{Illustration of how bias terms can shift hyperplanes, transforming distance-like intermediate representations into intensity-based logits.}
-%     \label{fig:hyperplane_bias}
-% \end{figure}
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Architecture} & \textbf{Activation} & \textbf{Neg Layer} & \textbf{Bias Terms} \\
-\hline
-Model 1 & ReLU & No & Yes \\
-Model 2 & Abs & No & Yes \\
-Model 3 & ReLU & Yes & Yes \\
-Model 4 & Abs & Yes & Yes \\
-Model 5 & ReLU & No & No \\
-Model 6 & Abs & No & No \\
-\hline
-\end{tabular}
-\caption{Overview of experimental configurations systematically varying activation functions, Neg layers, and bias terms.}
-\label{tab:architectures}
-\end{table}
-
-\subsubsection{Hypotheses}
-Building on prior work, we propose:
-\begin{enumerate}
-    \item \textbf{Hidden layers favor distance-based representations}: Even under conventional intensity-driven loss functions, intermediate layers may minimize distance to prototypes.
-    \item \textbf{Enforcing intensity-based outputs may lead to optimization challenges}: Removing or flipping bias terms can expose potential conflicts between distance vs. intensity objectives.
-    \item \textbf{Explicit distance-based architectures can match or exceed traditional performance}: Architectures designed for distance-based encodings may yield more stable or interpretable solutions.
-\end{enumerate}
-
-\subsection{Related Work and Literature Review}
-Several lines of research inform our study of representational biases:
-\begin{itemize}
-    \item \textbf{Representational Learning and Embeddings:} Previous works on embeddings and manifold learning have highlighted the geometric aspects of deep representations. 
-    \item \textbf{Activation Function Studies:} Exploring how ReLU, LeakyReLU, Abs, or other nonlinearities impact learned representations has been a focal point for improved stability and performance.
-    \item \textbf{Bias Terms and Geometry:} Biases have been studied for their role in shifting decision boundaries and altering interpretability, as seen in prior work on margin theory and linear separators.
-    \item \textbf{Distance Measures in Neural Networks:} Recent papers have investigated how network layers might implicitly compute distances, especially in tasks involving clustering or metric learning.
-\end{itemize}
-We position our work at the intersection of these research directions, examining whether standard architectures \emph{naturally} adopt distance-like encodings, and how minor architectural changes (activation, bias usage, Neg layers) can either enhance or suppress these tendencies.
-
-\subsection{Summary}
-In summary, we build upon a strong theoretical framework (drawn from Draft 2) while integrating visual aids (from Draft 3) and expanded motivation. Our aim is to:
-\begin{itemize}
-    \item Examine the interplay between distance and intensity representations in hidden layers.
-    \item Investigate how bias terms and Neg layers modulate these tendencies.
-    \item Provide insights that help researchers design models aligning with the desired representational bias.
-\end{itemize}
-The following sections detail our experimental protocol, results, and analyses, which collectively address whether and why neural networks prefer distance-based or intensity-based internal encodings under standard training objectives.
-
+This theoretical foundation frames our experimental analysis, where we systematically investigate how architectural choices, such as activation functions and bias terms, affect representational biases. By probing these factors, we aim to elucidate the fundamental principles driving neural network learning and provide a unified framework for understanding distance-based and intensity-based representations.
