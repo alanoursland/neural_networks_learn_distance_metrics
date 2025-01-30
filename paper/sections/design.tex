@@ -14,7 +14,7 @@ We explore whether networks exhibit a preference for distance-based or intensity
 
 \subsection{Model Design}
 
-We constrained six neural network design to force specific internal representations. These architectures are intentionally kept simple to isolate the specific behaviors under study. We utilize two-layer networks. All of the hidden layers have 128 nodes. ReLU is studied as a standard activation function in deep learning. Abs is studied for its theoretical connection to the Mahalanobis distance, as outlined in the \ref{sec:background} section.
+We constrained six neural network design to force specific internal representations. These architectures are intentionally kept simple to isolate the specific behaviors under study. We utilize two-layer networks. All of the hidden layers have 128 nodes. ReLU is studied as a standard activation function in deep learning. Abs is studied for its theoretical connection to the Mahalanobis distance.
 
 The core representational constraint is CrossEntropyLoss, which enforces intensity-based outputs. The combination of activations and a negation operator control how the output layer must represent features internally. The activation function forces positive values (more precisely, non-negative). The negation reverses the order and signs of the activations. Models with the negation learn a positive distance representation which is converted by the negation layer into a negative intensity representation. 
 
