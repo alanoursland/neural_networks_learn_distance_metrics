@@ -1,65 +1,51 @@
 \section{Experimental Design}
 \label{sec:exp_design}
 
-This experimental design aims to investigate how different architectural constraints influence the learning dynamics and representational biases of neural networks. Specifically, we explore whether networks exhibit a preference for distance-based or intensity-based representations when learning features from data. By systematically varying key architectural components, such as activation functions and the presence or absence of bias terms, we aim to gain empirical insights into the interplay between network architecture, learned representations, and the underlying geometry of the feature space. The results will inform our understanding of whether neural networks fundamentally learn distance metric features, and how architectural choices might facilitate or hinder the development of such representations.
+We explore whether networks exhibit a preference for distance-based or intensity-based representations. We employ simple two-layer networks and systematically architectural components to force either distance or intensity representations in the final linear layer. We aim to reveal potential training biases towards specific representation types.
 
 \subsection{Objectives}
-Our experiments address the following key questions:
 \begin{enumerate}
-    \item When neural networks are constrained to produce either distance-based or intensity-based outputs, how does this affect their overall performance and learning dynamics?
-    \item How do different activation functions and the presence or absence of bias terms in the output layer influence the network's ability to learn under these different representational constraints?
-    \item By analyzing the performance and behavior of networks under these constraints, what can we infer about the nature of the representations learned in the hidden layer and the geometry of the feature space?
-\end{enumerate}
-
-\subsection{Architectural Variants}To investigate how different output constraints affect network learning and the resulting representations, we employ six two-layer architectures. These architectures are intentionally kept simple to isolate the specific behaviors under study. They systematically vary key components: the choice of activation function, the presence of a negation operation at the output, and the use of a bias term in the final linear layer. The rationale behind these choices is as follows:
-
-\begin{enumerate}
-    \item \textbf{Two-layer Networks}: We utilize two-layer networks for their simplicity and widespread use in fundamental studies of neural networks. All of the hidden layers have 128 nodes. This allows for a focused analysis of representational biases without the added complexity of deeper architectures.
-
-    \item \textbf{ReLU and Abs Activations}: ReLU is a standard activation function in deep learning, widely used for its computational efficiency and empirical success. Abs, on the other hand, has a theoretical connection to the Mahalanobis distance, as outlined in the \ref{sec:background} section, making it relevant for investigating distance-based representations.
-
-    \item \textbf{Output Negation}: The models are trained using Cross-Entropy Loss, which inherently enforces an intensity-based interpretation at the output (larger values indicate stronger matches). The Negation operation, when applied after the final activation, inverts the output. While the final output remains an intensity due to the properties of LogSoftmax within Cross-Entropy Loss, the input to the Negation operation is effectively forced to represent a distance (smaller values signify stronger matches). This allows us to probe how the network learns when constrained to produce a distance-based representation immediately before the final output.
-
-    \item \textbf{Bias Term}: The six primary architectures exclude a bias term in the final linear layer. This is a deliberate choice to prevent the network from trivially learning the opposite representation (e.g., intensity when we want to enforce distance) and then simply shifting it back using the bias. By excluding the bias, we ensure that the network is genuinely learning the desired representation. However, to investigate the potential impact of this constraint, we also include variants that do include a bias term in the final layer.
-\end{enumerate}
-
-The four experimental architectures are defined as follows:
-
-\begin{enumerate}
-    \item \textbf{ReLU2}: \texttt{x $\to$ Linear $\to$ ReLU $\to$ Linear $\to$ ReLU $\to$ y}
-    \item \textbf{Abs2}: \texttt{x $\to$ Linear $\to$ Abs $\to$ Linear $\to$ Abs $\to$ y}
-    \item \textbf{ReLU2-Neg}: \texttt{x $\to$ Linear $\to$ ReLU $\to$ Linear $\to$ ReLU $\to$ Neg $\to$ y}
-    \item \textbf{Abs2-Neg}: \texttt{x $\to$ Linear $\to$ Abs $\to$ Linear $\to$ Abs $\to$ Neg $\to$ y}
-\end{enumerate}
-
-To establish a baseline for comparison, we include two control architectures:
-
-\begin{enumerate}
-    \item \textbf{ReLU}: \texttt{x $\to$ Linear $\to$ ReLU $\to$ Linear $\to$ y}
-    \item \textbf{Abs}: \texttt{x $\to$ Linear $\to$ Abs $\to$ Linear $\to$ y}
+    \item When neural networks are constrained to produce either distance-based or intensity-based outputs, how does this affect their performance?
+    
+    \item How do different activation functions influence the network's ability to learn under these different representational constraints?
+    \item By analyzing the performance and behavior of networks under these constraints, what can we infer about the nature of the representations learned in the output layer and the geometry of the feature space?
 \end{enumerate}
 
 
+\subsection{Model Design}
+
+We constrained six neural network design to force specific internal representations. These architectures are intentionally kept simple to isolate the specific behaviors under study. We utilize two-layer networks. All of the hidden layers have 128 nodes. ReLU is studied as a standard activation function in deep learning. Abs is studied for its theoretical connection to the Mahalanobis distance, as outlined in the \ref{sec:background} section.
+
+The core representational constraint is CrossEntropyLoss, which enforces intensity-based outputs. The combination of activations and a negation operator control how the output layer must represent features internally. The activation function forces positive values (more precisely, non-negative). The negation reverses the order and signs of the activations. Models with the negation learn a positive distance representation which is converted by the negation layer into a negative intensity representation. 
+
+The six primary architectures exclude a bias term in the final linear layer. This choice prevents the network from trivially learning the opposite representation (because $-(Wx)=(-W)x$) and then simply shifting it back to the positive side by using the bias. 
+
+To establish a baseline for comparison, we include two control architectures \texttt{ReLU} and \texttt{Abs}. The four experimental architectures are \texttt{Abs2}, \texttt{Abs2-Neg}, \texttt{ReLU2}, and \texttt{ReLU2-Neg}. 
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Model} & \textbf{Architecture}\\
+        \midrule
+        Abs & x → Linear → Abs → Linear → y \\
+        ReLU & x → Linear → ReLU → Linear → y \\
+        \midrule
+        Abs2 & x → Linear → Abs → Linear → Abs → y \\
+        Abs2-Neg & x → Linear → Abs → Linear → Abs → Neg → y \\
+        ReLU2 & x → Linear → ReLU → Linear → ReLU → y \\
+        ReLU2-Neg & x → Linear → ReLU → Linear → ReLU → Neg → y \\
+        \bottomrule
+    \end{tabular}
+    \caption{Experiment Model Architectures}
+\end{table}
 
 \subsection{Experimental Setup}
-\subsubsection{Dataset and Preprocessing}
-We use the MNIST dataset \cite{lecun1998gradient}, a widely studied dataset of handwritten digits with well-understood features. Its relatively low dimensionality (28x28 pixels) and distinct visual features make it suitable for analyzing the emergence of distance-based vs. intensity-based representations in a controlled setting. The images are normalized globally across the entire dataset to zero mean and unit variance.
+We use the MNIST dataset \cite{lecun1998gradient} for its well-understood features and relatively low dimensionality (28x28 pixels), making it suitable for analyzing representational preferences in a controlled setting. As is standard practice, images are normalized to zero mean and unit variance across the dataset.
 
-\subsubsection{Training Protocol}
-Training protocol was selected to minimize hyperparameters and other complexity to ensure that observed differences in performance can be more directly attributed to the architectural variations.
-\begin{itemize}
-    \item \textbf{Optimizer}: Stochastic Gradient Descent (SGD) with a learning rate of 0.001.
-    \item \textbf{Training Duration}: 5000 epochs (chosen based on observed convergence patterns), using the full-batch training set per gradient update to remove training sensitivity to batch size.
-    \item \textbf{Repetitions}: Each experiment is repeated 20 times to ensure statistical robustness.
-    \item \textbf{Loss Function}: CrossEntropyLoss, applied to logits produced by the final linear layer. CrossEntropyLoss calls LogSoftmax as its first operation.
-\end{itemize}
+To minimize confounding factors, we choose a simple training protocol with minimal hyperparameters. We use SGD optimization with learning rate 0.001 and train for 5000 epochs with full-batch updates. Each experiment is repeated 20 times. The loss function is CrossEntropyLoss (which includes LogSoftmax) applied to the final layer's logits.
 
-\subsection{Metrics and Evaluation}
-The following metrics will be used to evaluate the performance and behavior of the different architectures:
-\begin{itemize}
-    \item \textbf{Accuracy}: Final classification accuracy on the MNIST test set will be used to measure the overall performance of each architecture.
-    \item \textbf{Stability}: The variance in accuracy across the 20 training runs will be used to assess the stability of each architecture's learning process. Lower variance indicates more consistent performance across different random initializations.
-    \item \textbf{Stability}: Paired t-tests will be conducted to determine whether the observed differences in mean accuracy between architectures are statistically significant. This will help us ascertain whether any performance variations are likely due to genuine differences in the architectures' learning capabilities or simply due to random chance.
-\end{itemize}
+We evaluate each architecture's performance using three metrics: test accuracy on MNIST, stability (variance across 20 training runs), and statistical significance via paired t-tests between architectures. These metrics enable us to compare both absolute performance and the consistency of learning across different random initializations.
 
 The performance of each architecture, under the described experimental conditions, is analyzed in the following section. 

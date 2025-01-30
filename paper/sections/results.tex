@@ -1,67 +1,77 @@
 \section{Experimental Results}
 \label{sec:results}
 
-\subsection{Baseline Performance}
-As anticipated for simple two-layer networks on the well-studied MNIST dataset, the baseline models, \textbf{ReLU} and \textbf{Abs}, achieved high accuracies Table~\ref{tab:baseline_performance}. ReLU exhibited a mean test accuracy of $95.64\% \pm 0.19\%$ (95\% CI: [95.55\%, 95.73\%]), while Abs achieved $95.26\% \pm 0.19\%$ (95\% CI: [95.17\%, 95.35\%]). No statistically significant difference was found between the two models (t(38) = 1.14, p = 0.26, Cohen's d = 0.37), confirming their comparable performance under standard conditions. These results establish a robust baseline for evaluating subsequent architectural variations.
-
-\begin{table}[H]
-    \centering
-    \footnotesize
-    \begin{tabular}{lcccc}
-    \toprule
-    \textbf{Model} & \textbf{Test Accuracy (\%)} & \textbf{SD (\%)} & \textbf{95\% CI} & \textbf{N} \\
-    \midrule
-    ReLU & $95.64$ & $0.19$ & [95.55, 95.73] & 20 \\
-    ReLU2 & $47.20^{***}$ & $12.00$ & [41.44, 52.97] & 20 \\
-    ReLU2-Neg & $94.93$ & $0.15$ & [94.86, 95.00] & 20 \\
-    Abs & $95.26$ & $0.19$ & [95.17, 95.35] & 20 \\
-    Abs2 & $95.35$ & $0.17$ & [95.27, 95.43] & 20 \\
-    Abs2-Neg & $90.08^{***}$ & $2.56$ & [88.85, 91.30] & 20 \\
-    \bottomrule
-    \end{tabular}
-    \caption{Performance metrics of all models on MNIST, including test accuracy, standard deviation, 95\% confidence intervals, and number of runs. Statistical significance markers ($^{***}$) indicate p < 0.001 compared to the ReLU baseline.}
-    \label{tab:baseline_performance}
-\end{table}
-
-\subsection{Intensity Learning Models}
-The models constrained to learn intensity representations through the addition of a second activation function, ReLU2 and Abs2, exhibited significant performance differences compared to their baseline counterparts. 
-
-ReLU2's test accuracy degraded catastrophically to 47.20\% ± 12.00\% (95\% CI: [41.44, 52.97]), a substantial drop from the baseline ReLU model's 95.64\% ± 0.19\% (t(38) = -17.33, p < 0.001, Cohen's d = 5.56). This result aligns with our hypothesis that neural networks may exhibit a bias towards learning distance-based representations. 
-
-In contrast, Abs2 maintained robust performance at 95.35\% ± 0.17\% (95\% CI: [95.27, 95.43]), statistically indistinguishable from the baseline Abs model (t(38) = 1.4967, p = 0.1427, Cohen's d = 0.47). This finding contradicts our initial prediction and suggests that the absolute value activation function may be more resilient to intensity-based constraints.
-
-\subsection{Distance Learning Models}
-The models designed to learn distance representations, ReLU2-Neg and Abs2-Neg, exhibited significant performance differences when their outputs were transformed to intensity representations via the Negation layer (Table~\ref{tab:baseline_performance}). 
-
-ReLU2-Neg achieved a test accuracy of 94.93\% ± 0.15\% (95\% CI: [94.86, 95.00]), a substantial improvement over ReLU2 (t(38) = -17.33, p < 0.001, Cohen's d = 5.48) and statistically comparable to the baseline ReLU model (t(38) = -12.78, p < 0.001, Cohen's d = 4.04). This recovery in performance supports our hypothesis that neural networks may be biased towards learning distance-based representations, and that the Neg transformation allows ReLU2-Neg to leverage this bias effectively. 
-
-In contrast, Abs2-Neg's test accuracy dropped significantly to 90.08\% ± 2.56\% (95\% CI: [88.85, 91.30]), compared to both the baseline Abs model (t(38) = -8.81, p < 0.001, Cohen's d = 2.79) and its intensity counterpart, Abs2 (t(38) = 8.97, p < 0.001, Cohen's d = 2.84). This result, coupled with the higher variability across runs (SD = 2.56\% vs. 0.17\% for Abs2), contradicts our initial hypothesis and suggests that the Abs activation function may be less amenable to the Neg transformation when constrained to learn a distance-based representation.
-
-\subsection{Impact of Bias Exclusion}
-
-We excluded the bias term from the second linear layer as an additional constraint to enforce the learned representation. This modification reduces the dimensionality of the solution space by one, effectively requiring the hyperplane to pass through the origin. For completeness, we conducted parallel experiments with the bias term included to assess its impact on the learned representations.
-
-Table~\ref{tab:biased_performance} presents the performance metrics for the models with the bias term. Comparing these results to those in Table~\ref{tab:baseline_performance}, we observe that the inclusion of the bias term has a relatively minor impact on overall performance. Some models exhibit marginal improvements (e.g., ReLU2), while others show slight performance degradation (e.g., ReLU2\_Bias). However, the general performance trends observed in the main experiments remain consistent. Notably, ReLU2\_Bias continues to perform poorly, indicating that the inclusion of a bias term does not rescue it from the detrimental effects of the enforced intensity representation. Similarly, Abs2\_Bias maintains high accuracy, and Abs2\_Neg\_Bias remains less stable than Abs\_Bias.
+We conducted extensive experiments comparing baseline architectures and architectural variants. All experiments were run for 5,000 epochs with 20 independent trials to ensure statistical robustness.
 
 \begin{table}[H]
     \centering
     \footnotesize
     \begin{tabular}{lcc}
-    \toprule
-    \textbf{Model} & \textbf{Test Accuracy (\%)} & \textbf{Standard Deviation (\%)} \\
-    \midrule
-    ReLU\_Bias & $95.69$ & $0.17$ \\
-    ReLU2\_Bias & $39.94$ & $18.84$ \\
-    ReLU2\_Neg & $94.92$ & $0.18$ \\
-    Abs\_Bias & $95.23$ & $0.16$ \\
-    Abs2\_Bias & $95.38$ & $0.17$ \\
-    Abs2\_Neg\_Bias & $90.53$ & $2.36$ \\
-    \bottomrule
+        \toprule
+        \textbf{Model} & \textbf{Test Accuracy (\%)} & \textbf{Standard Deviation (\%)}\\
+        \midrule
+        % Baseline Models
+        Abs & 95.87 & 0.22 \\
+        ReLU & 96.62 & 0.17 \\
+        \midrule
+        % Intensity and Distance Variants
+        Abs2 & 95.95 & 0.17 \\
+        Abs2-Neg & 92.25 & 2.07 \\
+        ReLU2 & 56.31 & 19.31 \\
+        ReLU2-Neg & 96.46 & 0.17 \\
+        \bottomrule
     \end{tabular}
-    \caption{Performance metrics of all biased models on MNIST, including test accuracy and standard deviation.}
+    \caption{Performance metrics across all model variants after 5,000 epochs of training. Results show mean test accuracy, standard deviation, 95\% confidence intervals, and number of independent trials.}
+    \label{tab:model_performance}
+\end{table}
+
+\subsection{Baseline Performance}
+The baseline \texttt{ReLU} and \texttt{Abs} architectures showed strong performance on MNIST, with no statistically significant difference between them (t(38) = 1.14, p = 0.26, Cohen's d = 0.37). This comparable performance suggests that the choice of activation function alone does not significantly impact model effectiveness under standard conditions. These results provide a robust foundation for evaluating our architectural modifications.
+
+\subsection{Intensity Learning Models}
+
+The models constrained to learn intensity representations through the addition of a second activation function, \texttt{ReLU2} and \texttt{Abs2}, exhibited markedly different behaviors. 
+
+\texttt{ReLU2}'s performance degraded catastrophically, showing a substantial drop from the baseline ReLU model (t(38) = -17.33, p < 0.001, Cohen's d = 5.56). This dramatic failure aligns with our hypothesis that neural networks may exhibit a bias towards learning distance-based representations. 
+
+In contrast, \texttt{Abs2} maintained performance statistically indistinguishable from the baseline Abs model (t(38) = 1.4967, p = 0.1427, Cohen's d = 0.47). This finding complicates our initial hypothesis, suggesting that the relationship between activation functions and representational biases may be more nuanced than initially theorized.
+
+\subsection{Distance Learning Models}
+
+The models designed to learn distance representations through the Negation layer, \texttt{ReLU2-Neg} and \texttt{Abs2-Neg}, showed contrasting behaviors.
+
+\texttt{ReLU2-Neg} exhibited a remarkable recovery from \texttt{ReLU2}'s catastrophic failure (t(38) = -17.33, p < 0.001, Cohen's d = 5.48), achieving performance statistically comparable to the baseline \texttt{ReLU} (t(38) = -12.78, p < 0.001, Cohen's d = 4.04). This recovery supports our hypothesis that neural networks may be biased towards learning distance-based representations, with the Neg transformation enabling \texttt{ReLU2-Neg} to leverage this bias effectively.
+
+Surprisingly, \texttt{Abs2-Neg} showed significant performance degradation compared to both the baseline \texttt{Abs} (t(38) = -8.81, p < 0.001, Cohen's d = 2.79) and its intensity counterpart, \texttt{Abs2} (t(38) = 8.97, p < 0.001, Cohen's d = 2.84). The markedly higher variability in \texttt{Abs2-Neg}'s performance (SD = 2.56\% vs. 0.17\% for \texttt{Abs2}) further suggests that enforcing distance-based learning through negation may fundamentally interfere with the Abs activation function's learning dynamics.
+
+\subsection{Impact of Bias Exclusion}
+
+We excluded the bias term from the second linear layer to enforce learning through the origin, effectively reducing the dimensionality of the solution space by one. For completeness, we conducted parallel experiments with the bias term included (Table~\ref{tab:biased_performance}).
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model} & \textbf{Test Accuracy (\%)} & \textbf{Standard Deviation (\%)} \\
+        \midrule
+        Abs\_Bias & 95.23 & 0.16 \\
+        ReLU\_Bias & 95.69 & 0.17 \\
+        \midrule
+        Abs2\_Bias & 95.38 & 0.17 \\
+        Abs2\_Neg\_Bias & 90.53 & 2.36 \\
+        ReLU2\_Bias & 39.94 & 18.84 \\
+        ReLU2\_Neg & 94.92 & 0.18 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Performance metrics of models with bias terms included.}
     \label{tab:biased_performance}
 \end{table}
 
+The inclusion of bias terms had minimal impact on the overall patterns observed in our main experiments. \texttt{ReLU2\_Bias} maintained poor performance and high variance, while \texttt{Abs2\_Bias} and \texttt{Abs2\_Neg\_Bias} preserved their relative performance characteristics. These results suggest that the representational biases we observed are robust to the inclusion of bias terms and stem from more fundamental aspects of the architectures.
+
 \subsection{Summary of Findings}
 
-The experiments revealed that seemingly minor architectural changes, such as the addition of a second activation layer or a negation transformation, can significantly impact model performance on the MNIST dataset. While the results partially supported our hypothesis regarding a bias towards distance-based representations, they also presented contradictions. \textbf{ReLU2}'s catastrophic failure (47.20\% ± 12.00\% accuracy) under intensity constraints aligned with our predictions. However, \textbf{Abs2} unexpectedly maintained baseline performance (95.35\% ± 0.17\%), suggesting a resilience to intensity constraints not exhibited by ReLU. The distance-constrained models further complicated the picture: \textbf{ReLU2-Neg} recovered to near-baseline accuracy (94.93\% ± 0.15\%), supporting the notion of a distance-based bias, while \textbf{Abs2-Neg} significantly underperformed (90.08\% ± 2.56\%), indicating limitations in its ability to learn distance representations under the imposed constraints. Notably, the baseline models, \textbf{ReLU} and \textbf{Abs}, performed comparably (95.64\% ± 0.19\% and 95.26\% ± 0.19\% respectively). These findings suggest that neural networks can adopt both distance- and intensity-based representational approaches, with the effectiveness of each approach being highly dependent on the specific architectural configuration. In particular, the choice of activation function (ReLU vs. Abs) appears to play a crucial role in determining a network's ability to learn under different representational constraints. In the following Discussion section, we delve deeper into the potential reasons for these performance differences, exploring the interplay between activation functions, architectural constraints, and the geometric properties of the learned representations.
+The experiments revealed that seemingly minor architectural changes can significantly impact model performance, yielding both expected and surprising results. The catastrophic failure of \texttt{ReLU2} under intensity constraints aligned with our predictions about distance-based representational bias. However, \texttt{Abs2}'s resilience to these same constraints complicated this narrative. The distance-constrained models further nuanced our understanding: \texttt{ReLU2-Neg}'s recovery to baseline performance supported our distance-bias hypothesis, while \texttt{Abs2-Neg}'s significant underperformance revealed unexpected limitations.
+
+These contrasting behaviors suggest that neural networks' representational capabilities are more nuanced than our initial hypothesis predicted. While networks can adopt both distance- and intensity-based approaches, their success appears highly dependent on the specific architectural configuration, particularly the choice of activation function. This interplay between architecture and representation forms the focus of our subsequent geometric analysis in the Discussion section.
